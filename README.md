@@ -1,6 +1,4 @@
 # bing-wallpaper
-Makes the daily-updating Bing.com wallpaper available to your apps.
-# bing-wallpaper
 
 This container makes the daily-updating Bing.com wallpaper available to your apps. It presents the wallpaper as an endpoint on your network so that you can point your other apps or utilities to it.
 
