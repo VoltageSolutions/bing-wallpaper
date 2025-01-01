@@ -96,7 +96,7 @@ For reference, here is a sample of the json response that Bing provides.
 
 ## Debugging
 
-bing-wallpaper* will write to Docker logs. If you want to debug it yourself, clone the repo. You can uncomment code sections like this to force failure scenarios.
+bing-wallpaper will write to Docker logs. If you want to debug it yourself, clone the repo. You can uncomment code sections like this to force failure scenarios.
 
 ```python
 # Simulate network errors
