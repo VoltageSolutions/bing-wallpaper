@@ -2,9 +2,11 @@ name: Build and Push Docker Image
 
 on:
   push:
-    branches: [ "main" ]
-    # Publish semver tags as releases.
-    tags: [ 'v*.*.*' ]
+    branches:
+      - "main" 
+  pull_request:
+    branches:
+      - "**"
 
 env:
   REGISTRY: ghcr.io
@@ -41,7 +43,6 @@ jobs:
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
       - name: Log into registry ${{ env.REGISTRY }}
-        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -55,16 +56,35 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.title=${{ env.IMAGE_NAME }}
+            org.opencontainers.image.description=Automatically built Docker image for Bing Wallpaper
+            org.opencontainers.image.authors=${{ github.actor }}
+            org.opencontainers.image.source=${{ github.repositoryUrl }}
+            org.opencontainers.image.version=${{ github.ref_name }}
+            org.opencontainers.image.revision=${{ github.sha }}
 
-      # Build and push Docker image with Buildx (don't push on PR)
+      # Determine tag based on branch or main
+      - name: Determine Docker tag
+        id: tag
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+            echo "tag=latest" >> $GITHUB_ENV
+          elif [[ "${{ github.event.pull_request }}" ]]; then
+            echo "tag=${GITHUB_HEAD_REF}" >> $GITHUB_ENV
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+
+      # Build and push Docker image with Buildx
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image
         id: build-and-push
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.tag }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -78,7 +98,7 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         env:
           # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
-          TAGS: ${{ steps.meta.outputs.tags }}
+          TAG: ${{ env.tag }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
