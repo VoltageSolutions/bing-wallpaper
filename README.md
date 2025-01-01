@@ -18,7 +18,7 @@ services:
 Using docker run:
 
 ```bash
-docker run -p 5000:5000 -d --name bing-wallpaper
+docker run -p 5000:5000 -d --name bing-wallpaper ghcr.io/voltagesolutions/bing-wallpaper:latest
 ```
 
 ## Example usage
@@ -102,4 +102,10 @@ bing-wallpaper will write to Docker logs. If you want to debug it yourself, clon
 # Simulate network errors
 #if os.environ.get("SIMULATE_NETWORK_ERROR") == "1":
 #    raise requests.exceptions.ConnectionError("Simulated network error")
+```
+
+You then need to set the environment variable when you start your container.
+
+```bash
+docker run -e SIMULATE_NETWORK_ERROR=1 -p 5000:5000 -d --name bing-wallpaper ghcr.io/voltagesolutions/bing-wallpaper:latest
 ```
